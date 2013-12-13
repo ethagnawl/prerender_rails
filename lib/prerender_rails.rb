@@ -5,7 +5,6 @@ module Rack
     DISALLOWED_PHANTOMJS_HEADERS = %w(
       cache-control
       content-length
-      content-type
       transfer-encoding
       connection
       date
