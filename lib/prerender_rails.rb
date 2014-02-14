@@ -20,7 +20,9 @@ module Rack
         'bingbot',
         'baiduspider',
         'facebookexternalhit',
-        'twitterbot'
+        'twitterbot',
+        'adsbot-google',
+        'mediapartners-google'
       ]
 
       @extensions_to_ignore = [
