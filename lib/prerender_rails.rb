@@ -22,7 +22,9 @@ module Rack
         'facebookexternalhit',
         'twitterbot',
         'adsbot-google',
-        'mediapartners-google'
+        'mediapartners-google',
+        'outbrain',     # Outbrain needs to see prerender
+        'http_request2' # From pocket reader?
       ]
 
       @extensions_to_ignore = [
