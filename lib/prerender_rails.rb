@@ -24,7 +24,8 @@ module Rack
         'adsbot-google',
         'mediapartners-google',
         'outbrain',     # Outbrain needs to see prerender
-        'http_request2' # From pocket reader?
+        'http_request2',# From pocket reader?
+        'digg'
       ]
 
       @extensions_to_ignore = [
