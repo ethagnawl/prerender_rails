@@ -2,7 +2,7 @@ module Rack
   class Prerender
     require 'net/http'
 
-    DISALLOWED_PHANTOMJS_HEADERS = %w(
+    DISALLOWED_HEADERS = %w(
       cache-control
       content-length
       transfer-encoding
@@ -132,9 +132,9 @@ module Rack
 
     def get_prerendered_page_response(env)
       begin
-        url = URI.parse(build_api_url(env))
+        url = build_api_url(env)
         headers = { 'User-Agent' => env['HTTP_USER_AGENT'] }
-        headers['X-Prerender-Token'] = ENV['PRERENDER_TOKEN'] if ENV['PRERENDER_TOKEN']
+
         req = Net::HTTP::Get.new(url.request_uri, headers)
         response = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
       rescue
@@ -142,15 +142,12 @@ module Rack
       end
     end
 
-    def build_api_url(env)
-      url = Rack::Request.new(env).url
-      prerender_url = get_prerender_service_url()
-      forward_slash = prerender_url[-1, 1] == '/' ? '' : '/'
-      "#{prerender_url}#{forward_slash}#{url}"
-    end
+    def build_api_uri(env)
+      uri = URI.parse(Rack::Request.new(env).url)
+      uri.host = ENV['FASTBOOT_HOSTNAME']
+      uri.port = nil
 
-    def get_prerender_service_url
-      @options[:prerender_service_url] || ENV['PRERENDER_SERVICE_URL'] || 'http://prerender.herokuapp.com/'
+      uri
     end
 
     def build_rack_resposne_from_prerender(prerendered_response)
@@ -158,7 +155,7 @@ module Rack
 
       # Pass through only applicable 
       prerendered_response.each do |name, val|
-        next if DISALLOWED_PHANTOMJS_HEADERS.include? name
+        next if DISALLOWED_HEADERS.include? name
         response[name] = val
       end
 
