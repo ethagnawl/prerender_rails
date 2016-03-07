@@ -132,22 +132,27 @@ module Rack
 
     def get_prerendered_page_response(env)
       begin
-        url = build_api_url(env)
+        url = build_api_uri(env)
         headers = { 'User-Agent' => env['HTTP_USER_AGENT'] }
 
         req = Net::HTTP::Get.new(url.request_uri, headers)
-        response = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
+
+        http = Net::HTTP.new(url.host, url.port)
+        http.use_ssl = true
+
+        response = http.start { |http| http.request(req) }
       rescue
         nil
       end
     end
 
     def build_api_uri(env)
-      uri = URI.parse(Rack::Request.new(env).url)
-      uri.host = ENV['FASTBOOT_HOSTNAME']
-      uri.port = nil
+      request_uri = URI.parse(Rack::Request.new(env).url)
+      fastboot_uri = URI(ENV['FASTBOOT_URL'])
 
-      uri
+      fastboot_uri.query = "path=#{request_uri.path}"
+
+      fastboot_uri
     end
 
     def build_rack_resposne_from_prerender(prerendered_response)
