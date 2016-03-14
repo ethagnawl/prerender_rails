@@ -132,21 +132,34 @@ module Rack
 
     def get_prerendered_page_response(env)
       begin
-        url = URI.parse(build_api_url(env))
+        request = Rack::Request.new(env)
+        prerender_url = URI.parse(build_api_url(env))
+
         headers = { 'User-Agent' => env['HTTP_USER_AGENT'] }
         headers['X-Prerender-Token'] = ENV['PRERENDER_TOKEN'] if ENV['PRERENDER_TOKEN']
-        req = Net::HTTP::Get.new(url.request_uri, headers)
-        response = Net::HTTP.start(url.host, url.port) { |http| http.request(req) }
+
+        req = Net::HTTP::Get.new(prerender_url.request_uri, headers)
+        http = Net::HTTP.new(prerender_url.host, prerender_url.port)
+
+        http.use_ssl = true if prerender_with_fastboot?(request)
+
+        response = http.start { |http| http.request(req) }
       rescue
         nil
       end
     end
 
     def build_api_url(env)
-      url = Rack::Request.new(env).url
-      prerender_url = get_prerender_service_url()
-      forward_slash = prerender_url[-1, 1] == '/' ? '' : '/'
-      "#{prerender_url}#{forward_slash}#{url}"
+      request = Rack::Request.new(env)
+      if prerender_with_fastboot?(request)
+        fastboot_uri = URI(ENV['FASTBOOT_URL'])
+        fastboot_uri.query = "path=#{request.path}"
+        fastboot_uri.to_s
+      else
+        prerender_url = get_prerender_service_url()
+        forward_slash = prerender_url[-1, 1] == '/' ? '' : '/'
+        "#{prerender_url}#{forward_slash}#{request.url}"
+      end
     end
 
     def get_prerender_service_url
@@ -185,6 +198,15 @@ module Rack
     def after_render(env, response)
       return true unless @options[:after_render]
       @options[:after_render].call(env, response)
+    end
+
+    private
+
+    def prerender_with_fastboot?(request)
+      return false unless @options[:fastboot_whitelist].is_a?(Array)
+      path = request.path
+
+      @options[:fastboot_whitelist].any?{ |regex| request.path =~ regex }
     end
   end
 end
