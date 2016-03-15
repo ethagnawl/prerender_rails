@@ -142,7 +142,7 @@ module Rack
         http = Net::HTTP.new(prerender_url.host, prerender_url.port)
 
         http.use_ssl = true if prerender_with_fastboot?(request)
-
+        Rails.logger.info "*** Prerendering with #{prerender_url}"
         response = http.start { |http| http.request(req) }
       rescue
         nil
@@ -204,7 +204,6 @@ module Rack
 
     def prerender_with_fastboot?(request)
       return false unless @options[:fastboot_whitelist].is_a?(Array)
-      path = request.path
 
       @options[:fastboot_whitelist].any?{ |regex| request.path =~ regex }
     end
