@@ -102,17 +102,6 @@ module Rack
 
       request = Rack::Request.new(env)
 
-      return true if Rack::Utils.parse_query(request.query_string).has_key?('_escaped_fragment_')
-
-      #if it is not a bot...dont prerender
-      return false if @crawler_user_agents.all? { |crawler_user_agent| !user_agent.downcase.include?(crawler_user_agent.downcase) }
-
-      #if it is a bot and is requesting a resource...dont prerender
-      return false if @extensions_to_ignore.any? { |extension| request.path.include? extension }
-
-      #if it is a bot and not requesting a resource and is not whitelisted...dont prerender
-      return false if @options[:whitelist].is_a?(Array) && @options[:whitelist].all? { |whitelisted| !Regexp.new(whitelisted).match(request.path) }
-
       #if it is a bot and not requesting a resource and is not blacklisted(url or referer)...dont prerender
       if @options[:blacklist].is_a?(Array) && @options[:blacklist].any? { |blacklisted|
           blacklistedUrl = false
@@ -126,6 +115,17 @@ module Rack
         }
         return false
       end 
+
+      return true if Rack::Utils.parse_query(request.query_string).has_key?('_escaped_fragment_')
+
+      #if it is not a bot...dont prerender
+      return false if @crawler_user_agents.all? { |crawler_user_agent| !user_agent.downcase.include?(crawler_user_agent.downcase) }
+
+      #if it is a bot and is requesting a resource...dont prerender
+      return false if @extensions_to_ignore.any? { |extension| request.path.include? extension }
+
+      #if it is a bot and not requesting a resource and is not whitelisted...dont prerender
+      return false if @options[:whitelist].is_a?(Array) && @options[:whitelist].all? { |whitelisted| !Regexp.new(whitelisted).match(request.path) }
 
       return true
     end
