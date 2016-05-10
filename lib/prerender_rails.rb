@@ -25,7 +25,9 @@ module Rack
         'mediapartners-google',
         'outbrain',     # Outbrain needs to see prerender
         'http_request2',# From pocket reader?
-        'digg'
+        'digg',
+        'pubexchange',
+        'socialflow'
       ]
 
       @extensions_to_ignore = [
