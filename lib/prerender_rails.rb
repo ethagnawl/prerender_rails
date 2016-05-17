@@ -88,7 +88,7 @@ module Rack
         prerendered_response = get_prerendered_page_response(env)
 
         if prerendered_response
-          response = build_rack_resposne_from_prerender(prerendered_response)
+          response = build_rack_response_from_prerender(prerendered_response)
           after_render(env, prerendered_response)
           return response.finish
         end
@@ -168,7 +168,7 @@ module Rack
       @options[:prerender_service_url] || ENV['PRERENDER_SERVICE_URL'] || 'http://prerender.herokuapp.com/'
     end
 
-    def build_rack_resposne_from_prerender(prerendered_response)
+    def build_rack_response_from_prerender(prerendered_response)
       response = Rack::Response.new
 
       # Pass through only applicable 
